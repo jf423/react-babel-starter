@@ -1,6 +1,6 @@
 /**
  *
- *  React-101-Training
+ *  React-101-Training (ES6)
  *  Copyright 2016 Mokoversity Inc. All rights reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,26 +21,51 @@
 
 // Include Gulp & Tools We'll Use
 var gulp = require('gulp');
-var browserSync = require("browser-sync");  
+var browserSync = require("browser-sync");
 var babel = require('gulp-babel');
 var sourcemaps = require('gulp-sourcemaps');
 var react = require('gulp-react');
+var browserify = require('gulp-browserify');
+var runSequence = require('run-sequence');
 
 // Convert JSX and compile ES2015 to JavaScript
 gulp.task('build', function () {
   return gulp.src('src/**/*.jsx')
       .pipe(sourcemaps.init())
-      .pipe(react())
+      .pipe(react({
+        es6module: true
+      }))
       .pipe(babel({
         presets: ['es2015']
       }))
       .pipe(sourcemaps.write('.'))
+      .pipe(gulp.dest('src'));
+});
+
+// Browserify
+gulp.task('browserify', function () {
+    return gulp.src('src/app.js')
+      .pipe(browserify())
       .pipe(gulp.dest('dist'));
+});
+
+// Browserify
+gulp.task('todo', function () {
+    return gulp.src('src/todo.js')
+      .pipe(browserify())
+      .pipe(gulp.dest('dist'));
+});
+
+gulp.task('compile', function(done) {
+    runSequence('build', 'browserify', function() {
+        done();
+    });
 });
 
 // Watch Files For Changes
 gulp.task('watch', function () {
-    gulp.watch(['src/*'], ['build']);
+    gulp.watch(['src/**/*.jsx'], ['compile']);
+    gulp.watch(['src/**/*.js'], ['todo']);
 });
 
 // Default Task
